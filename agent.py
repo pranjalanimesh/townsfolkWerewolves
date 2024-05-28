@@ -1,5 +1,8 @@
+import openai
 from datetime import datetime
 import random
+import json
+from llm import model
 
 class Agent:
     def __init__(self, name,role,color, initial_memory):
@@ -9,6 +12,7 @@ class Agent:
         self.memory = []
         self.position = (random.randint(0, 9), random.randint(0, 9))
         self.initialize_memory(initial_memory)
+        self.client = model
 
     def initialize_memory(self, initial_memory):
         self.record_memory(initial_memory)
@@ -67,4 +71,5 @@ class Agent:
     def townsfolk_action(self, x, y):
         # Implement townsfolk behavior
         return (random.choice([-1, 1, 0]), random.choice([-1, 1, 0]))
+    
     

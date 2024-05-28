@@ -64,6 +64,9 @@ class GameEnvironment:
         # Check if any agent has reached a task
         if any((x, y) in self.tasks.values() for (_, x, y) in self.agents.values()):
             print('Task completed!')
+
+        # For each agent make them observe the next observations and happenings in the environment
+        
         
     
         self.master.after(1000, self.update_environment)  # Schedule next update
