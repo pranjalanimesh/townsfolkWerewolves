@@ -3,6 +3,7 @@ import random
 from agent import Agent
 from task import Task
 import numpy as np
+from threading import Thread
 
 class GameEnvironment:
     def __init__(self, master, rows=15, cols=15, size=50):
@@ -106,12 +107,39 @@ class GameEnvironment:
     #     self.state = state
 
     def move_agents(self):
+        # Updating the positions for the agents simultaneously with multi-threading
+        threads = []
+        for agent_name, (agent, x, y) in self.agents.items():
+            thread = Thread(target=self.act_agent, args=(agent_name,))
+            threads.append(thread)
+            thread.start()
+            
+        for thread in threads:
+            thread.join()
+
+        # Updating the state of the game
         state = self.playground()
         for task, (task, x, y) in self.tasks.items():
             state[y][x] = '2' + task.name
         for agent_name, (agent, x, y) in self.agents.items():
             state[y][x] = '1' + agent_name
         self.state = state
+
+    def act_agent(self, agent_name):
+        agent, x, y = self.agents[agent_name]
+        vision_matrix = self.vision_matrix(x, y, agent.vision_range)
+        movement = agent.action(x, y, vision_matrix)
+        if movement:
+            xNext, yNext = x + movement[0], y + movement[1]
+            if(xNext<2):
+                xNext=2
+            if(yNext<2):
+                yNext=2
+            if(xNext>self.cols-3):
+                xNext=self.cols-3
+            if(yNext>self.rows-3):
+                yNext=self.rows-3
+            self.agents[agent_name] = (agent, xNext, yNext)
 
     def vision_matrix(self, x, y, vision_range=1):
         # Implement agent observation of the environment
@@ -122,22 +150,6 @@ class GameEnvironment:
         return square
 
     def update_environment(self):
-        # Updating the positions for the agents
-        # Action needs threading to be implemented
-        for agent_name, (agent, x, y) in self.agents.items():
-            vision_matrix = self.vision_matrix(x, y, agent.vision_range)
-            movement = agent.action(x, y, vision_matrix)
-            if movement:
-                xNext, yNext = x + movement[0], y + movement[1]
-                if(xNext<2):
-                    xNext=2
-                if(yNext<2):
-                    yNext=2
-                if(xNext>self.cols-3):
-                    xNext=self.cols-3
-                if(yNext>self.rows-3):
-                    yNext=self.rows-3
-                self.agents[agent_name] = (agent, xNext, yNext)
 
         self.move_agents()
 
