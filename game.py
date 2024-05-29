@@ -78,34 +78,6 @@ class GameEnvironment:
         self.canvas.create_rectangle(x*self.size, y*self.size, (x+1)*self.size, (y+1)*self.size, fill=agent.color)
         self.canvas.create_text(x*self.size+self.size//2, y*self.size+self.size//2, text=agent.name[:2])
 
-    # def observe(self):
-    #     # Implement agent observation of the environment
-    #     for agent_name, (agent, x, y) in self.agents.items():
-    #         print(x,y)
-    #         square = np.array(self.state)
-    #         square = np.array(square[max(0, y-1):min(self.rows, y+2), max(0, x-1):min(self.cols, x+2)])
-    #         print(f'{agent_name} observes: \n{square}')
-    #         if(x==0):
-    #             square = [['0' for _ in range(3)], agent[0], agent[1]]
-    #             print("Wall on the west")
-    #         if(y==0):
-    #             print("Wall on north")
-    #         if(x==self.cols-1):
-    #             print("Wall on the east")
-    #         if(y==self.rows-1):
-    #             print("Wall at the south")
-
-    # def move_agent(self, agent_name, new_x, new_y):
-    #     agent, x, y = self.agents[agent_name]
-    #     self.agents[agent_name] = (agent, new_x, new_y)
-    #     state = self.initial_state
-
-    #     for agent_name, (agent, x, y) in self.agents.items():
-    #         state[y][x] = '1' + agent_name
-    #     for task, (task, x, y) in self.tasks.items():
-    #         state[y][x] = '2' + task.name
-    #     self.state = state
-
     def move_agents(self):
         # Updating the positions for the agents simultaneously with multi-threading
         threads = []
