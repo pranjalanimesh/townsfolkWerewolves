@@ -1,5 +1,7 @@
 from dotenv import load_dotenv
 import os
+from langchain_openai import AzureChatOpenAI
+from langchain_core.messages import HumanMessage, SystemMessage
 
 # Load .env file
 load_dotenv()
@@ -24,13 +26,23 @@ os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
 os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGCHAIN_API_KEY")
 os.environ["LANGCHAIN_PROJECT"] = "Langchain Agent Demo"
 
-
-from langchain_openai import AzureChatOpenAI
-
 model = AzureChatOpenAI(
     deployment_name=chat_model_name,
     temperature='0.1'
 )
+
+def completion(messages, max_tokens=50, temperature=0.0):
+    model = AzureChatOpenAI(
+        deployment_name=chat_model_name,
+        temperature=temperature,
+        max_tokens=max_tokens
+    )
+
+    human = HumanMessage(content=messages['user'])
+    system = SystemMessage(content=messages['system'])
+
+    completion = model.invoke([system, human])
+    return completion.content
 
 if __name__ == "__main__":
     print("Loaded environment variables")
@@ -40,3 +52,8 @@ if __name__ == "__main__":
     print(f"Chat Model Name: {chat_model_name}")
     print(f"LangSmith API Key: {os.getenv('LANGCHAIN_API_KEY')}")
     print(f"LangSmith Project: {os.getenv('LANGCHAIN_PROJECT')}")
+
+    com = completion({
+        'user': 'What is the meaning of life?',
+    'system': 'The meaning of life is to live and learn. Output only this and nothing else. DO NOT OUTPUT ANYTHING ELSE.'
+    }, max_tokens=100, temperature=0.0)
