@@ -9,4 +9,5 @@ class Task():
     
     def complete(self):
         self.completed = True
+        self.color = 'grey'
         print(f'{self.name} completed!')
