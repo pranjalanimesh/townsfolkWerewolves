@@ -27,10 +27,6 @@ class GameEnvironment:
         self.timestep = 2000
         self.master.after(self.timestep, self.update_environment)  # Update every timestep
 
-    def load_and_resize_image(self, image_path, width, height):
-        image = Image.open(image_path)
-        resized_image = image.resize((width, height), Image.LANCZOS)
-        return ImageTk.PhotoImage(resized_image)
     
     def playground(self):
         state = [['0' for _ in range(self.cols)] for _ in range(self.rows)]
