@@ -97,7 +97,7 @@ class Agent:
 
         print(f"nl_vision for {self.name} ({self.role}): \n{nl_vision}")
 
-        user_prompt = f"Werewolves have to catch the townfolks and eliminate them. Werewolves has to catch all the townfolks to win the game. You can see the things below: \n{nl_vision} \n. Think critically step by step to decide your next move"
+        user_prompt = f"Werewolves have to catch the townsfolks and eliminate them. Werewolves has to catch all the townsfolks to win the game. You can see the things below: \n{nl_vision} \n. Think critically step by step to decide your next move"
 
         acceptable_responses = ['up', 'down', 'left', 'right']
 
@@ -135,7 +135,7 @@ class Agent:
         if task_name:
             task_info += f'You have to complete the task {task_name} at x={tasks[self.task_chosen].x} and y={tasks[self.task_chosen].y}'
 
-        system_prompt = f"You are playing a game. You are a townfolk character in a townsfolk and werewolves game. Use logical reasoning and give logical response to the situations."
+        system_prompt = f"You are playing a game. You are a townsfolk character in a townsfolk and werewolves game. Use logical reasoning and give logical response to the situations."
 
         # vision_matrix = ((json.dumps(vision_matrix.__str__()).replace("], ", "]\n")).replace("[","")).replace("]","").replace('"','')
 
