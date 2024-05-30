@@ -34,17 +34,17 @@ class GameEnvironment:
             state[self.rows-2][j] = '3'
         return state
 
-    def add_agent(self, agent, x, y):
-        self.agents[agent.name] = (agent, x, y)
-        self.state[y][x] = '1' + agent.name  # '1' + first letter of agent name to distinguish from tasks '2`'
-        print(f'Agent {agent.name} added at {x},{y}')
-        self.draw_agent(agent, x, y)
+    def add_agent(self, agent):
+        self.agents[agent.name] = agent
+        self.state[agent.y][agent.x] = '1' + agent.name  # '1' + first letter of agent name to distinguish from tasks '2`'
+        print(f'Agent {agent.name} added at {agent.x},{agent.y}')
+        self.draw_agent(agent)
 
-    def add_task(self, task, x, y):
-        self.tasks[task.name] = (task, x, y)
-        self.state[y][x] = '2' + task.name # '2' + first letter of task name to distinguish from agents '1'
-        print(f'Task {task.name} added at {x},{y}')
-        self.draw_task(task,x, y)
+    def add_task(self, task):
+        self.tasks[task.name] = task
+        self.state[task.y][task.x] = '2' + task.name # '2' + first letter of task name to distinguish from agents '1'
+        print(f'Task {task.name} added at {task.x},{task.y}')
+        self.draw_task(task)
 
     def draw_grid(self):
         for i in range(self.rows + 1):
@@ -58,51 +58,55 @@ class GameEnvironment:
             for col in range(self.cols):
                 if self.state[row][col][0] == '1':
                     agent_name = self.state[row][col][1:]
-                    self.draw_agent(self.agents[agent_name][0], col, row)
+                    self.draw_agent(self.agents[agent_name])
 
                 elif self.state[row][col][0] == '2':
                     task_name = self.state[row][col][1:]
-                    self.draw_task(self.tasks[task_name][0],col, row)
+                    self.draw_task(self.tasks[task_name])
 
                 elif self.state[row][col][0] == '3':
                     self.canvas.create_rectangle(col*self.size, row*self.size, (col+1)*self.size, (row+1)*self.size, fill="black")
                 else:
                     self.canvas.create_rectangle(col*self.size, row*self.size, (col+1)*self.size, (row+1)*self.size, fill="white")
 
-    def draw_task(self, task, x, y):
+    def draw_task(self, task):
         """Draws a task marker on the grid."""
-        self.canvas.create_rectangle(x*self.size, y*self.size, (x+1)*self.size, (y+1)*self.size, fill=task.color)
-        self.canvas.create_text(x*self.size + self.size//2, y*self.size + self.size//2, text=task.name, fill='white')
+        self.canvas.create_rectangle(task.x*self.size, task.y*self.size, (task.x+1)*self.size, (task.y+1)*self.size, fill=task.color)
+        self.canvas.create_text(task.x*self.size + self.size//2, task.y*self.size + self.size//2, text=task.name, fill='white')
 
-    def draw_agent(self, agent, x, y):
-        self.canvas.create_rectangle(x*self.size, y*self.size, (x+1)*self.size, (y+1)*self.size, fill=agent.color)
-        self.canvas.create_text(x*self.size+self.size//2, y*self.size+self.size//2, text=agent.name[:2])
+    def draw_agent(self, agent):
+        self.canvas.create_rectangle(agent.x*self.size, agent.y*self.size, (agent.x+1)*self.size, (agent.y+1)*self.size, fill=agent.color)
+        self.canvas.create_text(agent.x*self.size+self.size//2, agent.y*self.size+self.size//2, text=agent.name[:2])
 
     def move_agents(self):
+        print('Moving agents...')
         # Updating the positions for the agents simultaneously with multi-threading
         threads = []
-        for agent_name, (agent, x, y) in self.agents.items():
+        for agent_name, agent in self.agents.items():
             thread = Thread(target=self.act_agent, args=(agent_name,))
             threads.append(thread)
             thread.start()
+            print(f'{agent_name} is moving...')
             
         for thread in threads:
             thread.join()
+            print(f'{thread} joined...')
 
         # Updating the state of the game
         state = self.playground()
-        for task, (task, x, y) in self.tasks.items():
-            state[y][x] = '2' + task.name
-        for agent_name, (agent, x, y) in self.agents.items():
-            state[y][x] = '1' + agent_name
+        for task_name, task in self.tasks.items():
+            state[task.y][task.x] = '2' + task.name
+
+        for agent_name, agent in self.agents.items():
+            state[agent.y][agent.x] = '1' + agent_name
         self.state = state
 
     def act_agent(self, agent_name):
-        agent, x, y = self.agents[agent_name]
-        vision_matrix = self.vision_matrix(x, y, agent.vision_range)
-        movement = agent.action(x, y, vision_matrix)
+        agent= self.agents[agent_name]
+        vision_matrix = self.vision_matrix(agent)
+        movement = agent.action(vision_matrix, self.tasks)
         if movement:
-            xNext, yNext = x + movement[0], y + movement[1]
+            xNext, yNext = agent.x + movement[0], agent.y + movement[1]
             if(xNext<2):
                 xNext=2
             if(yNext<2):
@@ -111,14 +115,15 @@ class GameEnvironment:
                 xNext=self.cols-3
             if(yNext>self.rows-3):
                 yNext=self.rows-3
-            self.agents[agent_name] = (agent, xNext, yNext)
+            self.agents[agent_name].x = xNext
+            self.agents[agent_name].y = yNext
 
-    def vision_matrix(self, x, y, vision_range=1):
+    def vision_matrix(self, agent):
         # Implement agent observation of the environment
         square = np.array(self.state)
-        square = np.array(square[max(0, y-vision_range):min(self.rows, y+vision_range+1), max(0, x-vision_range):min(self.cols, x+vision_range+1)])
+        square = np.array(square[max(0, agent.y-agent.vision_range):min(self.rows, agent.y+agent.vision_range+1), max(0, agent.x-agent.vision_range):min(self.cols, agent.x+agent.vision_range+1)])
         
-        print(f'Agent at {x},{y} with vision range {vision_range} observes: \n{square}')
+        print(f'{agent.name} ({agent.role}) at {agent.x},{agent.y} with vision range {agent.vision_range} observes: \n{square}')
         return square
 
     def update_environment(self):
