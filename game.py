@@ -24,10 +24,9 @@ class GameEnvironment:
         self.num_tasks = 0
         self.num_completed_tasks = 0
         self.directions = {(0, 1): 'down', (1, 0):'right', (0, -1):'up', (-1, 0):'left', (1, 1):'right down', (1, -1):'right up', (-1, 1):'left down', (-1, -1):'left up'}
-        self.timestep = 2000
+        self.timestep = 500
         self.master.after(self.timestep, self.update_environment)  # Update every timestep
 
-    
     def playground(self):
         state = [['0' for _ in range(self.cols)] for _ in range(self.rows)]
         for i in range(self.rows):
@@ -133,6 +132,7 @@ class GameEnvironment:
                         print('Game Over!')
                         print('Townsfolk Win!')
                         print('Exiting...')
+                        print('*'*50)
                         self.master.quit()
                     return
                 

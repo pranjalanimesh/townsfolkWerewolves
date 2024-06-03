@@ -143,7 +143,7 @@ class Agent:
 
         print(f"nl_vision for {self.name}: \n{nl_vision}")
 
-        user_prompt = f"Townsfolk have to complete tasks to win the game and find the werewolf. You can see the things below: \n{nl_vision} \n. You can move in the direction '{next_direction_for_task}' to move towards the task with shortest path. Think critically step by step to decide your next move"
+        user_prompt = f"Townsfolk have to complete tasks to win the game and find the werewolf. You can see the things below: \n{nl_vision} \n. Move in the direction '{next_direction_for_task}' to complete your chosen task. Think critically step by step to decide your next move"
 
         # acceptable_responses = ['up', 'down', 'left', 'right']
 
@@ -237,6 +237,10 @@ class Agent:
             (2,-1): 'right right up',
             (-2,1): 'left left down',
             (-2,-1): 'left left up',
+            (2,2): 'right right down down',
+            (2,-2): 'right right up up',
+            (-2,2): 'left left down down',
+            (-2,-2): 'left left up up',
         }
 
         nl_description = ''
@@ -257,9 +261,8 @@ class Agent:
         task_description = ''
         if self.role == 'werewolf':
             task_description += 'You are a werewolf. Your goal is to catch the townsfolk alone.\n'
-            task_description += 'You can destroy the task progress by going to a completed task location.\n'
-            task_description += 'You can wait at an incomplete task location for a townsfolk.\n'
-
+            task_description += 'You can make the task progress to 0  by going to a completed task location.\n'
+            task_description += 'You can wait at an incomplete task location for a townsfolk to come .\n'
         elif self.role == 'townsfolk':
             task_description += 'You are a townsfolk. Your goal is to complete the tasks.\n'
 
@@ -269,7 +272,7 @@ class Agent:
                     num_tasks += 1
                     task = tasks[cell[1:]]
                     if task.completed:
-                        task_description += f'A completed {task.name} at {coords_to_direction[(x-self.vision_range,y-self.vision_range)]}.\n'
+                        task_description += f'An already completed {task.name} at {coords_to_direction[(x-self.vision_range,y-self.vision_range)]}.\n'
                     else:
                         if task.name == self.task_chosen:
                             task_description += f'Your current task {task.name} is at {coords_to_direction[(x-self.vision_range,y-self.vision_range)]}\n'
@@ -287,7 +290,6 @@ class Agent:
                 wall_description += 'There is a wall on your left side.\n'
             if all([vision_matrix[i][2]=='3' for i in range(3)]):
                 wall_description += 'There is a wall on your right side.\n'
-
         if self.vision_range == 2:
             if all([x == '3' for x in vision_matrix[1]]):
                 wall_description += 'There is a wall on your upside.\n'
